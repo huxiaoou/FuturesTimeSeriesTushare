@@ -1,6 +1,6 @@
 """
 0. 另类数据: 汇率, CPI, M2, PPI
-1. 保存路径为 e:\\onedrive\\data\\tushare
+1. 保存路径为 E:\\Onedrive\\Data\\Alternative
 
 alternative.db/forex:
 | trade_date  | preclose |  open  |  high  |  low   | close  | pct_chg |
@@ -27,8 +27,11 @@ import argparse
 
 def parse_args():
     arg_parser = argparse.ArgumentParser(description="To calculate data, such as macro and forex")
-    arg_parser.add_argument("--switch", type=str,
-                            choices=("macro", "forex", "major_minor", "major_return", "available"), required=True)
+    arg_parser.add_argument(
+        "--switch", type=str,
+        choices=("macro", "forex", "position", "major_minor", "major_return", "available"),
+        required=True
+    )
     arg_parser.add_argument("--bgn", type=str, help="begin date, format = [YYYYMMDD]", required=True)
     arg_parser.add_argument("--stp", type=str, help="stop  date, format = [YYYYMMDD]")
     return arg_parser.parse_args()
@@ -67,3 +70,17 @@ if __name__ == "__main__":
             db_struct_forex=db_struct_cfg.forex,
             calendar=calendar,
         )
+    elif args.switch == "position":
+        from solutions.position import main_position_by_instru
+
+        main_position_by_instru(
+            universe=pro_cfg.universe,
+            bgn_date=bgn_date,
+            stp_date=stp_date,
+            calendar=calendar,
+            pos_db_struct=db_struct_cfg.position,
+            pos_by_instru_save_dir=pro_cfg.by_instru_pos_dir,
+        )
+
+    else:
+        raise ValueError(f"args.switch = {args.switch} is illegal")
