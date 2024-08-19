@@ -16,6 +16,8 @@ class CProCfg:
     alternative_dir: str
     universe: list[str]
     by_instru_pos_dir: str
+    by_instru_pre_dir: str
+    vol_alpha: float
 
 
 universe: list[str] = [
@@ -110,6 +112,8 @@ pro_cfg = CProCfg(
     alternative_dir=r"D:\OneDrive\Data\Alternative",
     universe=universe,
     by_instru_pos_dir=r"D:\OneDrive\Data\tushare\by_instrument\position",
+    by_instru_pre_dir=r"D:\OneDrive\Data\tushare\by_instrument\preprocess",
+    vol_alpha=0.9,
 )
 
 # ---------- databases structure ----------
@@ -125,6 +129,7 @@ class CDbStructCfg:
     position: CDbStruct
     basis: CDbStruct
     stock: CDbStruct
+    preprocess: CDbStruct
 
 
 db_struct_cfg = CDbStructCfg(
@@ -158,4 +163,9 @@ db_struct_cfg = CDbStructCfg(
         db_name=db_struct["stock"]["db_name"],
         table=CSqlTable(cfg=db_struct["stock"]["table"]),
     ),
+    preprocess=CDbStruct(
+        db_save_dir=pro_cfg.by_instru_pre_dir,
+        db_name=db_struct["preprocess"]["db_name"],
+        table=CSqlTable(cfg=db_struct["preprocess"]["table"])
+    )
 )

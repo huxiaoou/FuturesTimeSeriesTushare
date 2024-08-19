@@ -29,11 +29,13 @@ def parse_args():
     arg_parser = argparse.ArgumentParser(description="To calculate data, such as macro and forex")
     arg_parser.add_argument(
         "--switch", type=str,
-        choices=("macro", "forex", "position", "major_minor", "major_return", "available"),
+        choices=("macro", "forex", "position", "preprocess"),
         required=True
     )
     arg_parser.add_argument("--bgn", type=str, help="begin date, format = [YYYYMMDD]", required=True)
     arg_parser.add_argument("--stp", type=str, help="stop  date, format = [YYYYMMDD]")
+    arg_parser.add_argument("--nomp", default=False, action="store_true",
+                            help="not using multiprocess, for debug. Works only when switch in ('preprocess',)")
     return arg_parser.parse_args()
 
 
@@ -80,6 +82,28 @@ if __name__ == "__main__":
             calendar=calendar,
             pos_db_struct=db_struct_cfg.position,
             pos_by_instru_save_dir=pro_cfg.by_instru_pos_dir,
+        )
+    elif args.switch == "preprocess":
+        from solutions.preprocess import main_preprocess
+
+        slc_vars = [
+            "pre_close", "pre_settle",
+            "open", "high", "low", "close",
+            "vol", "amount", "oi",
+        ]
+
+        main_preprocess(
+            universe=pro_cfg.universe,
+            bgn_date=bgn_date,
+            stp_date=stp_date,
+            vol_alpha=pro_cfg.vol_alpha,
+            db_struct_fmd=db_struct_cfg.fmd,
+            db_struct_basis=db_struct_cfg.basis,
+            db_struct_stock=db_struct_cfg.stock,
+            db_struct_preprocess=db_struct_cfg.preprocess,
+            slc_vars=slc_vars,
+            calendar=calendar,
+            call_multiprocess=not args.nomp,
         )
 
     else:
