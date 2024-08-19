@@ -91,7 +91,6 @@ if __name__ == "__main__":
             "open", "high", "low", "close",
             "vol", "amount", "oi",
         ]
-
         main_preprocess(
             universe=pro_cfg.universe,
             bgn_date=bgn_date,
@@ -105,6 +104,5 @@ if __name__ == "__main__":
             calendar=calendar,
             call_multiprocess=not args.nomp,
         )
-
     else:
         raise ValueError(f"args.switch = {args.switch} is illegal")

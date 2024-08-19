@@ -166,6 +166,6 @@ db_struct_cfg = CDbStructCfg(
     preprocess=CDbStruct(
         db_save_dir=pro_cfg.by_instru_pre_dir,
         db_name=db_struct["preprocess"]["db_name"],
-        table=CSqlTable(cfg=db_struct["preprocess"]["table"])
-    )
+        table=CSqlTable(cfg=db_struct["preprocess"]["table"]),
+    ),
 )
