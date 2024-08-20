@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import numpy as np
 import pandas as pd
 from loguru import logger
 from rich.progress import track, Progress
@@ -124,6 +125,21 @@ def find_major_and_minor_by_instru(
     return major_data, minor_data
 
 
+def add_pre_price(instru_data: pd.DataFrame, pre_price_data: pd.DataFrame) -> pd.DataFrame:
+    return pd.merge(left=instru_data, right=pre_price_data, on=["trade_date", "ticker"], how="left")
+
+
+def cal_return(instru_data: pd.DataFrame):
+    def _cal_ret(a, b):
+        return (a / b - 1) if b > 0 else np.nan
+
+    instru_data["return_o"] = instru_data[["open", "pre_open"]].apply(
+        lambda z: _cal_ret(z["open"], z["pre_open"]), axis=1)
+    instru_data["return_c"] = instru_data[["close", "pre_close"]].apply(
+        lambda z: _cal_ret(z["close"], z["pre_close"]), axis=1)
+    return 0
+
+
 """
 Part IV: found vol, amount, oi by instrument
 """
@@ -152,7 +168,6 @@ Part V: Merge all
 
 def merge_all(
         dates_header: pd.DataFrame,
-        instru_pre_open_data: pd.DataFrame,
         instru_maj_data: pd.DataFrame,
         instru_min_data: pd.DataFrame,
         instru_vol_data: pd.DataFrame,
@@ -160,14 +175,8 @@ def merge_all(
         instru_stock_data: pd.DataFrame,
 ) -> pd.DataFrame:
     keys = "trade_date"
-    instru_maj_data_plus_open = pd.merge(
-        left=instru_maj_data, right=instru_pre_open_data, on=["trade_date", "ticker"], how="left",
-    )
-    instru_min_data_plus_open = pd.merge(
-        left=instru_min_data, right=instru_pre_open_data, on=["trade_date", "ticker"], how="left",
-    )
-    merged_data = pd.merge(left=dates_header, right=instru_maj_data_plus_open, on=keys, how="left")
-    merged_data = merged_data.merge(right=instru_min_data_plus_open, on=keys, how="left", suffixes=("_major", "_minor"))
+    merged_data = pd.merge(left=dates_header, right=instru_maj_data, on=keys, how="left")
+    merged_data = merged_data.merge(right=instru_min_data, on=keys, how="left", suffixes=("_major", "_minor"))
     merged_data = merged_data.merge(right=instru_vol_data, on=keys, how="left")
     merged_data = merged_data.merge(right=instru_basis_data, on=keys, how="left")
     merged_data = merged_data.merge(right=instru_stock_data, on=keys, how="left")
@@ -194,7 +203,7 @@ def make_double_to_single(
     return 0
 
 
-def adjust_and_select(instru: str, merged_data: pd.DataFrame, output_vars: list[str]) -> pd.DataFrame:
+def adjust_vol_amt_oi(merged_data: pd.DataFrame, instru: str):
     _vol_adj_date: str = "20200101"
     _exempt_instruments = ["IH", "IF", "IC", "IM", "TF", "TS", "T", "TL"]
 
@@ -212,10 +221,11 @@ def adjust_and_select(instru: str, merged_data: pd.DataFrame, output_vars: list[
         instru=instru,
         exempt_instruments=_exempt_instruments,
     )
+    return 0
 
-    # selected data
-    selected_data = merged_data[output_vars]
-    return selected_data
+
+def select(merged_data: pd.DataFrame, output_vars: list[str]) -> pd.DataFrame:
+    return merged_data[output_vars]
 
 
 def process_for_instru(
@@ -255,21 +265,21 @@ def process_for_instru(
             slc_vars=slc_vars,
             vol_alpha=vol_alpha,
         )
+        instru_maj_data = add_pre_price(instru_maj_data, instru_pre_open_data)
+        instru_min_data = add_pre_price(instru_min_data, instru_pre_open_data)
+        cal_return(instru_maj_data)
+        cal_return(instru_min_data)
         instru_vol_data = sum_vol_amount_oi_by_instru(instru_all_data=instru_all_data)
         merged_data = merge_all(
             dates_header=dates_header,
-            instru_pre_open_data=instru_pre_open_data,
             instru_maj_data=instru_maj_data,
             instru_min_data=instru_min_data,
             instru_vol_data=instru_vol_data,
             instru_basis_data=instru_basis_data,
             instru_stock_data=instru_stock_data,
         )
-        new_data = adjust_and_select(
-            instru=instru,
-            merged_data=merged_data,
-            output_vars=db_struct_instru.table.vars.names,
-        )
+        adjust_vol_amt_oi(merged_data=merged_data, instru=instru)
+        new_data = select(merged_data, output_vars=db_struct_instru.table.vars.names)
         sqldb.update(update_data=new_data)
     return 0
 
