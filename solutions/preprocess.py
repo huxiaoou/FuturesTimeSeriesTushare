@@ -1,5 +1,4 @@
 import multiprocessing as mp
-import numpy as np
 import pandas as pd
 from loguru import logger
 from rich.progress import track, Progress
@@ -7,10 +6,6 @@ from husfort.qutility import qtimer, SFG, SFY, error_handler, check_and_makedirs
 from husfort.qcalendar import CCalendar
 from husfort.qsqlite import CMgrSqlDb, CDbStruct
 from solutions.shared import load_fmd
-
-"""
-Part I: pre_price
-"""
 
 
 def get_pre_price(instru_md_data: pd.DataFrame, price: str = "open") -> pd.DataFrame:
@@ -31,11 +26,6 @@ def get_pre_price(instru_md_data: pd.DataFrame, price: str = "open") -> pd.DataF
     pivot_pre_data = pivot_data.sort_index(ascending=True).shift(1)
     pre_price_data = pivot_pre_data.stack().reset_index().rename(mapper={0: f"pre_{price}"}, axis=1)
     return pre_price_data
-
-
-"""
-Part II: load fundamental data
-"""
 
 
 def load_basis(db_struct: CDbStruct, instrument: str, bgn_date: str, stp_date: str) -> pd.DataFrame:
@@ -68,11 +58,6 @@ def load_stock(db_struct: CDbStruct, instrument: str, bgn_date: str, stp_date: s
     # ])
     # return raw_data[["trade_date", "in_stock"]]
     return pd.DataFrame({"trade_date": dates_header["trade_date"], "in_stock": 0})
-
-
-"""
-Part III: found major and minor ticker
-"""
 
 
 def find_major_and_minor_by_instru(
@@ -130,19 +115,14 @@ def add_pre_price(instru_data: pd.DataFrame, pre_price_data: pd.DataFrame) -> pd
 
 
 def cal_return(instru_data: pd.DataFrame):
-    def _cal_ret(a, b):
-        return (a / b - 1) if b > 0 else np.nan
+    def _cal_ret(a: float, b: float):
+        return (a / b - 1) if (a >= 0) and (b > 0) else 0
 
     instru_data["return_o"] = instru_data[["open", "pre_open"]].apply(
         lambda z: _cal_ret(z["open"], z["pre_open"]), axis=1)
     instru_data["return_c"] = instru_data[["close", "pre_close"]].apply(
         lambda z: _cal_ret(z["close"], z["pre_close"]), axis=1)
     return 0
-
-
-"""
-Part IV: found vol, amount, oi by instrument
-"""
 
 
 def sum_vol_amount_oi_by_instru(instru_all_data: pd.DataFrame) -> pd.DataFrame:
@@ -159,11 +139,6 @@ def sum_vol_amount_oi_by_instru(instru_all_data: pd.DataFrame) -> pd.DataFrame:
         return sum_df[save_cols]
     else:
         return pd.DataFrame(columns=save_cols)
-
-
-"""
-Part V: Merge all
-"""
 
 
 def merge_all(
@@ -183,9 +158,20 @@ def merge_all(
     return merged_data
 
 
-"""
-Part VI: Final adjustment
-"""
+def get_init_close_val(sqldb: CMgrSqlDb, instru_data: pd.DataFrame) -> float:
+    tail_data = sqldb.tail(n=1, value_columns=["closeI"])
+    if tail_data.empty:
+        return instru_data["pre_close_major"].dropna().iloc[0]
+    else:
+        return tail_data["closeI"].iloc[-1]
+
+
+def cal_instru_idx(instru_data: pd.DataFrame, init_close_val: float):
+    instru_data["closeI"] = (instru_data["return_c_major"] + 1).cumprod() * init_close_val
+    instru_data["openI"] = instru_data["closeI"] * instru_data["open_major"] / instru_data["close_major"]
+    instru_data["highI"] = instru_data["closeI"] * instru_data["high_major"] / instru_data["close_major"]
+    instru_data["lowI"] = instru_data["closeI"] * instru_data["low_major"] / instru_data["close_major"]
+    return 0
 
 
 def make_double_to_single(
@@ -278,6 +264,8 @@ def process_for_instru(
             instru_basis_data=instru_basis_data,
             instru_stock_data=instru_stock_data,
         )
+        init_close_val = get_init_close_val(sqldb=sqldb, instru_data=merged_data)
+        cal_instru_idx(instru_data=merged_data, init_close_val=init_close_val)
         adjust_vol_amt_oi(merged_data=merged_data, instru=instru)
         new_data = select(merged_data, output_vars=db_struct_instru.table.vars.names)
         sqldb.update(update_data=new_data)
