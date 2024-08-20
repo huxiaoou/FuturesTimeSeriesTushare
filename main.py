@@ -87,7 +87,7 @@ if __name__ == "__main__":
         from solutions.preprocess import main_preprocess
 
         slc_vars = [
-            "pre_close", "pre_settle",
+            "pre_settle",
             "open", "high", "low", "close",
             "vol", "amount", "oi",
         ]

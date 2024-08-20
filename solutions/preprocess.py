@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import numpy as np
 import pandas as pd
 from loguru import logger
 from rich.progress import track, Progress
@@ -8,10 +9,10 @@ from husfort.qsqlite import CMgrSqlDb, CDbStruct
 from solutions.shared import load_fmd
 
 
-def get_pre_price(instru_md_data: pd.DataFrame, price: str = "open") -> pd.DataFrame:
+def get_pre_price(instru_md_data: pd.DataFrame, price: str) -> pd.DataFrame:
     """
     params: instru_md_data: a pd.DataFrame with columns = ["trade_date", "ticker", price] at least
-    params: price: must be in  basic_inputs, default = "open"
+    params: price: must be in  basic_inputs,  "open" or "close"
 
     return : a pd.DataFrame with columns = ["trade_date", "ticker", f"pre_{price}"]
 
@@ -118,9 +119,9 @@ def cal_return(instru_data: pd.DataFrame):
     def _cal_ret(a: float, b: float):
         return (a / b - 1) if (a >= 0) and (b > 0) else 0
 
-    instru_data["return_o"] = instru_data[["open", "pre_open"]].apply(
+    instru_data["return_o"] = instru_data[["open", "pre_open"]].astype(np.float64).apply(
         lambda z: _cal_ret(z["open"], z["pre_open"]), axis=1)
-    instru_data["return_c"] = instru_data[["close", "pre_close"]].apply(
+    instru_data["return_c"] = instru_data[["close", "pre_close"]].astype(np.float64).apply(
         lambda z: _cal_ret(z["close"], z["pre_close"]), axis=1)
     return 0
 
@@ -244,15 +245,18 @@ def process_for_instru(
         mode="a",
     )
     if sqldb.check_continuity(bgn_date, calendar) == 0:
-        instru_pre_open_data = get_pre_price(instru_all_data, price="open")
+        instru_pre_opn_data = get_pre_price(instru_all_data, price="open")
+        instru_pre_cls_data = get_pre_price(instru_all_data, price="close")
         instru_maj_data, instru_min_data = find_major_and_minor_by_instru(
             instru=instru,
             instru_all_data=instru_all_data,
             slc_vars=slc_vars,
             vol_alpha=vol_alpha,
         )
-        instru_maj_data = add_pre_price(instru_maj_data, instru_pre_open_data)
-        instru_min_data = add_pre_price(instru_min_data, instru_pre_open_data)
+        instru_maj_data = add_pre_price(instru_maj_data, instru_pre_opn_data)
+        instru_maj_data = add_pre_price(instru_maj_data, instru_pre_cls_data)
+        instru_min_data = add_pre_price(instru_min_data, instru_pre_opn_data)
+        instru_min_data = add_pre_price(instru_min_data, instru_pre_cls_data)
         cal_return(instru_maj_data)
         cal_return(instru_min_data)
         instru_vol_data = sum_vol_amount_oi_by_instru(instru_all_data=instru_all_data)
