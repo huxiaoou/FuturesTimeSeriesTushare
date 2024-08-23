@@ -44,21 +44,19 @@ def load_basis(db_struct: CDbStruct, instrument: str, bgn_date: str, stp_date: s
     return raw_data[["trade_date", "basis", "basis_rate", "basis_annual"]]
 
 
-def load_stock(db_struct: CDbStruct, instrument: str, bgn_date: str, stp_date: str,
-               dates_header: pd.DataFrame) -> pd.DataFrame:
-    # sqldb = CMgrSqlDb(
-    #     db_save_dir=db_struct.db_save_dir,
-    #     db_name=db_struct.db_name,
-    #     table=db_struct.table,
-    #     mode="r",
-    # )
-    # raw_data = sqldb.read_by_conditions(conditions=[
-    #     ("trade_date", ">=", bgn_date),
-    #     ("trade_date", "<", stp_date),
-    #     ("ts_code", "=", instrument),
-    # ])
-    # return raw_data[["trade_date", "in_stock"]]
-    return pd.DataFrame({"trade_date": dates_header["trade_date"], "in_stock": 0})
+def load_stock(db_struct: CDbStruct, instrument: str, bgn_date: str, stp_date: str) -> pd.DataFrame:
+    sqldb = CMgrSqlDb(
+        db_save_dir=db_struct.db_save_dir,
+        db_name=db_struct.db_name,
+        table=db_struct.table,
+        mode="r",
+    )
+    raw_data = sqldb.read_by_conditions(conditions=[
+        ("trade_date", ">=", bgn_date),
+        ("trade_date", "<", stp_date),
+        ("ts_code", "=", instrument),
+    ])
+    return raw_data[["trade_date", "stock"]]
 
 
 def find_major_and_minor_by_instru(
@@ -233,7 +231,7 @@ def process_for_instru(
     base_bgn_date = calendar.get_next_date(bgn_date, -1)
     instru_all_data = load_fmd(db_struct_fmd, instru, base_bgn_date, stp_date)
     instru_basis_data = load_basis(db_struct_basis, instru, bgn_date, stp_date)
-    instru_stock_data = load_stock(db_struct_stock, instru, bgn_date, stp_date, dates_header)
+    instru_stock_data = load_stock(db_struct_stock, instru, bgn_date, stp_date)
 
     # to sql
     check_and_makedirs(db_struct_preprocess.db_save_dir)
