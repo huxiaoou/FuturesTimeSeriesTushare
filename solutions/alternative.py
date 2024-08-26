@@ -37,12 +37,11 @@ def main_macro(
         bgn_date: str,
         stp_date: str,
         path_macro_data: str,
-        alternative_dir: str,
         db_struct_macro: CDbStruct,
         calendar: CCalendar,
 ):
     sqldb = CMgrSqlDb(
-        db_save_dir=alternative_dir,
+        db_save_dir=db_struct_macro.db_save_dir,
         db_name=db_struct_macro.db_name,
         table=db_struct_macro.table,
         mode="a",
@@ -88,12 +87,11 @@ def main_forex(
         bgn_date: str,
         stp_date: str,
         path_forex_data: str,
-        alternative_dir: str,
         db_struct_forex: CDbStruct,
         calendar: CCalendar,
 ):
     sqldb = CMgrSqlDb(
-        db_save_dir=alternative_dir,
+        db_save_dir=db_struct_forex.db_save_dir,
         db_name=db_struct_forex.db_name,
         table=db_struct_forex.table,
         mode="a"

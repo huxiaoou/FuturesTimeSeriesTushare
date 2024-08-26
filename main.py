@@ -57,7 +57,6 @@ if __name__ == "__main__":
             bgn_date=bgn_date,
             stp_date=stp_date,
             path_macro_data=pro_cfg.path_macro_data,
-            alternative_dir=pro_cfg.alternative_dir,
             db_struct_macro=db_struct_cfg.macro,
             calendar=calendar,
         )
@@ -68,7 +67,6 @@ if __name__ == "__main__":
             bgn_date=bgn_date,
             stp_date=stp_date,
             path_forex_data=pro_cfg.path_forex_data,
-            alternative_dir=pro_cfg.alternative_dir,
             db_struct_forex=db_struct_cfg.forex,
             calendar=calendar,
         )

@@ -134,12 +134,12 @@ class CDbStructCfg:
 
 db_struct_cfg = CDbStructCfg(
     macro=CDbStruct(
-        db_save_dir=pro_cfg.root_dir,
+        db_save_dir=pro_cfg.alternative_dir,
         db_name=db_struct["macro"]["db_name"],
         table=CSqlTable(cfg=db_struct["macro"]["table"]),
     ),
     forex=CDbStruct(
-        db_save_dir=pro_cfg.root_dir,
+        db_save_dir=pro_cfg.alternative_dir,
         db_name=db_struct["forex"]["db_name"],
         table=CSqlTable(cfg=db_struct["forex"]["table"]),
     ),
