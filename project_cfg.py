@@ -103,16 +103,16 @@ universe: list[str] = [
 ]  # 79 instruments
 
 pro_cfg = CProCfg(
-    calendar_path=r"D:\OneDrive\Data\Calendar\cne_calendar.csv",
-    path_macro_data=r"D:\OneDrive\Data\Alternative\china_cpi_m2.xlsx",
-    path_forex_data=r"D:\OneDrive\Data\Alternative\exchange_rate.xlsx",
-    root_dir=r"D:\OneDrive\Data\tushare",
-    daily_data_root_dir=r"D:\OneDrive\Data\tushare\by_date",
-    db_struct_path=r"D:\OneDrive\Data\tushare\db_struct.yaml",
-    alternative_dir=r"D:\OneDrive\Data\Alternative",
+    calendar_path=r"E:\OneDrive\Data\Calendar\cne_calendar.csv",
+    path_macro_data=r"E:\OneDrive\Data\Alternative\china_cpi_m2.xlsx",
+    path_forex_data=r"E:\OneDrive\Data\Alternative\exchange_rate.xlsx",
+    root_dir=r"E:\OneDrive\Data\tushare",
+    daily_data_root_dir=r"E:\OneDrive\Data\tushare\by_date",
+    db_struct_path=r"E:\OneDrive\Data\tushare\db_struct.yaml",
+    alternative_dir=r"E:\OneDrive\Data\Alternative",
     universe=universe,
-    by_instru_pos_dir=r"D:\OneDrive\Data\tushare\by_instrument\position",
-    by_instru_pre_dir=r"D:\OneDrive\Data\tushare\by_instrument\preprocess",
+    by_instru_pos_dir=r"E:\OneDrive\Data\tushare\by_instrument\position",
+    by_instru_pre_dir=r"E:\OneDrive\Data\tushare\by_instrument\preprocess",
     vol_alpha=0.9,
 )
 
