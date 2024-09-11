@@ -291,7 +291,7 @@ def main_preprocess(
     # header
     if call_multiprocess:
         with Progress() as pb:
-            main_task = pb.add_task(description=f"[INF] Preprocessing {bgn_date}->{stp_date}", total=len(universe))
+            main_task = pb.add_task(description=f"Preprocessing {bgn_date}->{stp_date}", total=len(universe))
             with mp.get_context("spawn").Pool() as pool:
                 for instru in universe:
                     pool.apply_async(

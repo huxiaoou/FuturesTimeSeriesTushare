@@ -17,6 +17,8 @@ class CProCfg:
     universe: list[str]
     by_instru_pos_dir: str
     by_instru_pre_dir: str
+    by_instru_min_dir: str
+    minute_bar_data_file_name_tmpl: str
     vol_alpha: float
 
 
@@ -113,6 +115,8 @@ pro_cfg = CProCfg(
     universe=universe,
     by_instru_pos_dir=r"E:\OneDrive\Data\tushare\by_instrument\position",
     by_instru_pre_dir=r"E:\OneDrive\Data\tushare\by_instrument\preprocess",
+    by_instru_min_dir=r"E:\OneDrive\Data\tushare\by_instrument\minute_bar",
+    minute_bar_data_file_name_tmpl="tushare_futures_minute_bar_{}.csv.gz",
     vol_alpha=0.9,
 )
 
@@ -130,6 +134,7 @@ class CDbStructCfg:
     basis: CDbStruct
     stock: CDbStruct
     preprocess: CDbStruct
+    minute_bar: CDbStruct
 
 
 db_struct_cfg = CDbStructCfg(
@@ -167,5 +172,10 @@ db_struct_cfg = CDbStructCfg(
         db_save_dir=pro_cfg.by_instru_pre_dir,
         db_name=db_struct["preprocess"]["db_name"],
         table=CSqlTable(cfg=db_struct["preprocess"]["table"]),
+    ),
+    minute_bar=CDbStruct(
+        db_save_dir=pro_cfg.by_instru_min_dir,
+        db_name=db_struct["fMinuteBar"]["db_name"],
+        table=CSqlTable(cfg=db_struct["fMinuteBar"]["table"]),
     ),
 )

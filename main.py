@@ -29,13 +29,14 @@ def parse_args():
     arg_parser = argparse.ArgumentParser(description="To calculate data, such as macro and forex")
     arg_parser.add_argument(
         "--switch", type=str,
-        choices=("macro", "forex", "position", "preprocess"),
+        choices=("macro", "forex", "position", "preprocess", "minute_bar"),
         required=True
     )
     arg_parser.add_argument("--bgn", type=str, help="begin date, format = [YYYYMMDD]", required=True)
     arg_parser.add_argument("--stp", type=str, help="stop  date, format = [YYYYMMDD]")
     arg_parser.add_argument("--nomp", default=False, action="store_true",
                             help="not using multiprocess, for debug. Works only when switch in ('preprocess',)")
+    arg_parser.add_argument("--processes", type=int, default=None, help="number of processes to call")
     return arg_parser.parse_args()
 
 
@@ -101,6 +102,21 @@ if __name__ == "__main__":
             slc_vars=slc_vars,
             calendar=calendar,
             call_multiprocess=not args.nomp,
+        )
+    elif args.switch == "minute_bar":
+        from solutions.minute_bar import main_minute_bar
+
+        main_minute_bar(
+            universe=pro_cfg.universe,
+            src_data_root_dir=pro_cfg.daily_data_root_dir,
+            src_data_file_name_tmpl=pro_cfg.minute_bar_data_file_name_tmpl,
+            db_struct_preprocess=db_struct_cfg.preprocess,
+            db_struct_minute_bar=db_struct_cfg.minute_bar,
+            bgn_date=bgn_date,
+            stp_date=stp_date,
+            calendar=calendar,
+            call_multiprocess=not args.nomp,
+            processes=args.processes,
         )
     else:
         raise ValueError(f"args.switch = {args.switch} is illegal")
