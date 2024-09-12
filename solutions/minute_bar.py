@@ -9,6 +9,8 @@ from husfort.qutility import SFG, SFR, check_and_makedirs, error_handler
 from husfort.qcalendar import CCalendar
 from husfort.qsqlite import CDbStruct, CMgrSqlDb
 
+logger.add(f"logs/minute_bar_{dt.datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+
 
 class CMinuteBarInstru:
     def __init__(
@@ -98,6 +100,7 @@ class CMinuteBarInstru:
         for this_date, prev_date in zip(iter_dates, prev_dates):
             major_ticker = self.get_ticker_major(trade_date=this_date)
             if major_ticker is None:
+                logger.info(f"There is no ticker for {SFR(this_date)}/{SFR(self.instrument)}")
                 continue
             prev_minute_data = self.load_minute_data(trade_date=prev_date, contract=major_ticker)
             this_minute_data = self.load_minute_data(trade_date=this_date, contract=major_ticker)
