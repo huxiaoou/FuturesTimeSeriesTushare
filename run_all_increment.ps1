@@ -4,3 +4,4 @@ python main.py --bgn $bgn_date --switch macro
 python main.py --bgn $bgn_date --switch forex
 python main.py --bgn $bgn_date --switch position
 python main.py --bgn $bgn_date --switch preprocess
+python main.py --bgn $bgn_date --switch minute_bar
