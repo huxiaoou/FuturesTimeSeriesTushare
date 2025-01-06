@@ -1,7 +1,5 @@
-#$bgn_date = "20120104"
-#$stp_date = "20240823"
-$bgn_date = "20241101"
-$stp_date = "20241201"
+$bgn_date = "20241202"
+$stp_date = "20250101"
 
 python main.py --bgn $bgn_date --stp $stp_date --switch macro
 python main.py --bgn $bgn_date --stp $stp_date --switch forex
